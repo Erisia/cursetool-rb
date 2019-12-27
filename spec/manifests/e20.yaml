@@ -16,8 +16,7 @@ mods:
 # Decoration:
 - name: "dragons-radio-mod"
 - name: "garden-stuff"
-- name: "catwalks-3"
-  id: 243912
+- name: "catwalks-4"
 - name: "decocraft"
 
 # Project Dimension:
