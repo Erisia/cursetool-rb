@@ -22,10 +22,6 @@ module CurseTool
         JSON.parse(with_pool { |client| client.get_response(uri) }.body, symbolize_names: true)
       end
 
-      def get_mods(id_array)
-
-      end
-
       def file(mod_id)
         uri = URI(@base_uri + "/addon/#{mod_id}/files")
         response = with_pool { |client| client.get_response(uri) }
