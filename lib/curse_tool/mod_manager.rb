@@ -5,6 +5,7 @@ module CurseTool
     extend self
     attr_reader :seen_mods
     @seen_mods = {}
+    @seen_files = []
 
     CACHE_LOCATION = './data/mod_cache.yaml'
 
@@ -21,11 +22,12 @@ module CurseTool
       mod_hash = lookup_mod(mod_info) unless full_mod_def?(mod_info)
       mod_info.from_curse(mod_hash) if mod_hash
       mod_info.populate_file
+      @seen_files << {sha256: mod_info.sha256, file: mod_info.src}
     end
 
     def full_mod_def?(mod_info)
       mod_info.title && mod_info.id && mod_info.filename &&
-        mod_info.src && mod_info.md5
+        mod_info.src && (mod_info.md5 || mod_info.sha256)
     end
 
     def lookup_mod(mod_info)
