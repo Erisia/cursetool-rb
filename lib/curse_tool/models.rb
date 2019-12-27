@@ -73,7 +73,7 @@ module CurseTool
       begin
         self.sha256 = Digest::SHA2.new(256).update(open(src, &:read)) unless md5 || src.nil?
       rescue OpenURI::HTTPError => e
-        "Failed to caculate hash on #{self.name} due to s3 temp ban."
+        warn "Failed to caculate hash on #{self.name} due to s3 temp ban."
       end
       self
     end
