@@ -5,22 +5,10 @@ module CurseTool
         manifest = build_manifest(manifest_file)
         pack = NixPack.new(**manifest)
         ModManager.pull_mods(pack.version)
-        pack.mods.keep_if{|key, _| ModManager.seen_mods.keys.include? key}
         pack.mods.each do |mod_name, mod_info|
-          mod_info.deps = ModManager.lookup_deps(mod_name) if mod_info.deps.empty?
-          mod_info.deps ||= []
+          ModManager.expand_info(mod_info)
         end
-        deps = pack.mods.flat_map{|key, it| it.deps}.uniq
-        deps.delete_if(&:nil?)
-        deps = deps.each_with_object({}) do |dep, hash|
-          hash[dep.to_sym] = NixPackMod.new({name: dep.to_sym})
-        end
-        pack.mod_list = deps.merge(pack.mods)
-        pack.mod_list.each do |mod_name, mod_info|
-          mod_info.id ||= ModManager.lookup_mod(mod_name)
-          mod_info.src, mod_info.filename, mod_info.md5 = ModManager.lookup_files
-        end
-
+        pack
       end
 
       def build_manifest(manifest_file)

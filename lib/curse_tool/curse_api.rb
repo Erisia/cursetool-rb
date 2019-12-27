@@ -22,8 +22,14 @@ module CurseTool
         JSON.parse(with_pool { |client| client.get_response(uri) }.body, symbolize_names: true)
       end
 
-      def file(mod_id)
+      def files(mod_id)
         uri = URI(@base_uri + "/addon/#{mod_id}/files")
+        response = with_pool { |client| client.get_response(uri) }
+        JSON.parse(response.body, symbolize_names: true)
+      end
+
+      def file(id, mod_id)
+        uri = URI(@base_uri + "/addon/#{mod_id}/file/#{id}/")
         response = with_pool { |client| client.get_response(uri) }
         JSON.parse(response.body, symbolize_names: true)
       end
