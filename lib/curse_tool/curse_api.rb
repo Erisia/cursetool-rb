@@ -1,10 +1,8 @@
 require 'net/http'
-require 'connection_pool'
 require 'json'
 
 module CurseTool
   class CurseApi
-    @pool = ConnectionPool.new(size: 20) { Net::HTTP }
     @base_uri = 'https://addons-ecs.forgesvc.net/api/v2'
     @seen_mods = {}
 
@@ -35,9 +33,8 @@ module CurseTool
       end
 
       def with_pool
-        result = nil
-        @pool.with { |client| result = yield(client) }
-        result
+        # Hook to implement connection pool if needed
+        yield(Net::HTTP)
       end
     end
   end

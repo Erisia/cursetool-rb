@@ -18,12 +18,11 @@ module CurseTool
       @mod_list.mods
     end
 
-    def dump
-      {
-          version: version,
-          imports: imports,
-          mod_list: mods.dump
-      }
+    def dump(file)
+      file.truncate(0)
+      file.write(%({\n  "version" = "#{version}";\n  "imports" = [];\n  "mods" = {\n))
+      @mod_list.dump(file)
+      file.write(%(\n\t};\n};))
     end
   end
 
@@ -33,6 +32,13 @@ module CurseTool
       self.mods = array.each_with_object(Hash.new){ |mod, hash|
         hash[mod[:name].to_sym] = NixPackMod.new(pack, mod)
       }
+    end
+
+    def dump(file)
+      @mods.reject{|_, value| value.id.nil?}.each do |key, value|
+        file.write(%(    "#{key.to_s}" = ))
+        file.write("#{value.dump}\n")
+      end
     end
   end
 
@@ -46,7 +52,7 @@ module CurseTool
       self.side = hash[:side]&.to_sym || SIDE[2]
       self.required = hash[:required] || true
       self.default = hash[:default] || true
-      self.deps = hash[:deps] || []
+      self.deps = []
       self.filename = hash[:filename]
       self.encoded = hash[:encoded]
       self.page = hash[:page]
@@ -101,22 +107,22 @@ module CurseTool
 
     def dump
       hash = {
-          title: title,
-          name: name,
+          title: title.to_s,
+          name: name.to_s,
           id: id,
-          side: side,
+          side: side.to_s,
           required: required,
           default: default,
           deps: deps,
-          filename: filename,
-          encoded: encoded,
-          page: page,
-          src: src,
-          type: type
+          filename: filename.to_s,
+          encoded: encoded.to_s,
+          page: page.to_s,
+          src: src.to_s,
+          type: type.to_s
       }
-      hash[:md5] = md5 if md5
-      hash[:sha256] = sha256 if sha256
-      hash
+      hash[:md5] = md5.to_s if md5
+      hash[:sha256] = sha256.to_s if sha256
+      hash.transform_keys(&:to_s).to_s.gsub('>', '').gsub(',', ';').insert(-2, ';') << ';'
     end
   end
 

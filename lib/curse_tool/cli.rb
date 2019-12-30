@@ -8,7 +8,7 @@ module CurseTool
         pack.mods.each do |mod_name, mod_info|
           ModManager.expand_info(mod_info)
         end
-        pack
+        NixWriter.dump(pack)
       end
 
       def build_manifest(manifest_file)
@@ -17,7 +17,7 @@ module CurseTool
         imports = handle_imports(manifest[:imports], root_dir)
         duplicate_mods = manifest[:mods].map{|it| it[:name]} & imports.map{|it| it[:name]}
         warn "duplicate mods found #{duplicate_mods.map{|it| it}}, the highest import entry will be used" if duplicate_mods.any?
-        manifest_mods = manifest[:mods] | imports
+        manifest_mods = manifest[:mods].concat imports
         manifest[:mods] = manifest_mods.uniq{|entry| entry[:name]}
         manifest
       end
