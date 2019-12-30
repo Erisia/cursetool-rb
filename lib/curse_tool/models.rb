@@ -22,7 +22,7 @@ module CurseTool
       file.truncate(0)
       file.write(%({\n  "version" = "#{version}";\n  "imports" = [];\n  "mods" = {\n))
       @mod_list.dump(file)
-      file.write(%(\n\t};\n};))
+      file.write(%(\n\t};\n}))
     end
   end
 
