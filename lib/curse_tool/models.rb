@@ -68,23 +68,30 @@ module CurseTool
       return if !id || (filename && src)
       files = CurseApi.files(id)
       filename ? by_filename(files) : by_maturity(files)
-      # TODO Calculating sha hashes makes s3 angry since i have to download a bunch of files so i'll need some form of throttling.
-      # Bigger issue here is that this will also apply to regular downloads on madoka...
-      begin
-        self.sha256 = Digest::SHA2.new(256).update(open(src, &:read)) unless md5 || src.nil?
-      rescue OpenURI::HTTPError => e
-        warn "Failed to caculate hash on #{self.name} due to s3 temp ban."
-      end
+      hash
       self
+    end
+
+    def hash
+      self.sha256 = ModManager.seen_hashes[filename] ||= create_hash
+    end
+
+    def create_hash
+      Digest::SHA2.new(256).update(open(src, &:read)).to_s
+    rescue OpenURI::HTTPError => e
+      warn "Failed to caculate hash on #{self.name} due to #{e}, #{e.message}"
     end
 
     def by_maturity(files)
       file = files.reverse.find{|it| it[:releaseType] == maturity && it[:gameVersion].include?(pack.version) }
       file ||= files.reverse.find{|it| it[:releaseType] == maturity + 1 && it[:gameVersion].include?(pack.version) }
       file ||= files.reverse.find{|it| it[:releaseType] == maturity + 2 && it[:gameVersion].include?(pack.version) }
+      file ||= files.reverse.find{|it| it[:releaseType] == maturity && it[:gameVersion].include?(pack.version.split('.')[0..1].join('.')) }
+      file ||= files.reverse.find{|it| it[:releaseType] == maturity + 1 && it[:gameVersion].include?(pack.version.split('.')[0..1].join('.')) }
+      file ||= files.reverse.find{|it| it[:releaseType] == maturity + 2 && it[:gameVersion].include?(pack.version.split('.')[0..1].join('.')) }
       return warn("no file found for #{name} in any maturity for #{pack.version}") unless file
       self.filename = file[:fileName]
-      self.src = CGI.escape(file[:downloadUrl]).gsub('%3A', ':').gsub('%2F', '/')
+      self.src = CGI.escape(file[:downloadUrl]).gsub('%3A', ':').gsub('%2F', '/').gsub('edge', 'media')
     end
 
     def by_filename(files)

@@ -3,15 +3,20 @@ require_relative 'curse_api'
 module CurseTool
   module ModManager
     extend self
-    attr_reader :seen_mods
+    attr_reader :seen_mods, :seen_hashes
     @seen_mods = {}
-    @seen_files = []
+    @seen_hashes = {}
 
     CACHE_LOCATION = './data/mod_cache.yaml'
+    HASH_CACHE_LOCATION = './data/hash_cache.yaml'
 
     def pull_mods(version)
       @seen_mods = Psych.load(File.open(CACHE_LOCATION)) if File.exist?(CACHE_LOCATION)
-      results = CurseApi.search_mods(version) if !@seen_mods || @seen_mods.empty?
+      if !@seen_mods || @seen_mods.empty?
+        results = CurseApi.search_mods(version.split('.')[0..1].join('.'))
+        results.concat CurseApi.search_mods(version)
+        results.uniq!
+      end
       results ||= []
       results.each do |result|
         @seen_mods[result[:slug].to_sym] = result
@@ -22,7 +27,6 @@ module CurseTool
       mod_hash = lookup_mod(mod_info) unless full_mod_def?(mod_info)
       mod_info.from_curse(mod_hash) if mod_hash
       mod_info.populate_file
-      @seen_files << {sha256: mod_info.sha256, file: mod_info.src}
     end
 
     def full_mod_def?(mod_info)
@@ -42,22 +46,13 @@ module CurseTool
       return false unless result
     end
 
-    def lookup_file(mod_info, mod_version = nil, maturity = MATURITY[:release])
-      if mod_version
-        CurseApi.file(mod_id, mod_version, maturity).find { |it|
-          (mod_version.nil? || it['fileName'].include?(mod_version)) && it['releaseType'] == maturity
-        }
-      else
-        @seen_mods[mod_name]
-      end
-    end
-
     def add_mod(mod_info)
       @seen_mods[mod_info[:slug]] = mod_info
     end
 
     def dump!
       File.open(CACHE_LOCATION, 'w') { |f| Psych.dump(@seen_mods, f) }
+      File.open(HASH_CACHE_LOCATION, 'w') { |f| Psych.dump(@seen_hashes, f) }
     end
 
     at_exit do
