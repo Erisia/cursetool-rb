@@ -8,7 +8,8 @@ module CurseTool
         pack.mods.each do |mod_name, mod_info|
           ModManager.expand_info(mod_info)
         end
-        NixWriter.dump(pack)
+        file_name = manifest_file.gsub('yaml', 'nix')
+        NixWriter.dump(pack, file_name)
       end
 
       def build_manifest(manifest_file)

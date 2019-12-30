@@ -1,6 +1,7 @@
 require 'set'
 require 'digest/sha2'
 require 'open-uri'
+require 'cgi/util'
 
 module CurseTool
   MATURITY = [nil, :release, :beta, :alpha].freeze

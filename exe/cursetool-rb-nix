@@ -1,0 +1,5 @@
+#!nix-shell -i ruby -p ruby_2_6
+
+require_relative '../lib/curse_tool'
+
+CurseTool::CLI.build(ARGV[0])
