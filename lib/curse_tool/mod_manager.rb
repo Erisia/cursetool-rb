@@ -12,6 +12,7 @@ module CurseTool
 
     def pull_mods(version)
       @seen_mods = Psych.load(File.open(CACHE_LOCATION)) if File.exist?(CACHE_LOCATION)
+      @seen_hashes = Psych.load(File.open(HASH_CACHE_LOCATION)) if File.exist?(HASH_CACHE_LOCATION)
       if !@seen_mods || @seen_mods.empty?
         results = CurseApi.search_mods(version.split('.')[0..1].join('.'))
         results.concat CurseApi.search_mods(version)

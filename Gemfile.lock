@@ -1,9 +1,10 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    connection_pool (2.2.2)
-    deep_merge (1.2.1)
+    addressable (2.7.0)
+      public_suffix (>= 2.0.2, < 5.0)
     diff-lcs (1.3)
+    public_suffix (4.0.1)
     rspec (3.9.0)
       rspec-core (~> 3.9.0)
       rspec-expectations (~> 3.9.0)
@@ -23,8 +24,7 @@ PLATFORMS
   x86-mingw32
 
 DEPENDENCIES
-  connection_pool
-  deep_merge
+  addressable
   rspec
 
 BUNDLED WITH

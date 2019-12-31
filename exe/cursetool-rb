@@ -1,5 +1,12 @@
 #!/usr/bin/env ruby
 
+begin
+  require 'addressable/uri'
+rescue LoadError => e
+  warn 'Failed to load addressable, pulling dependency'
+  Gem.install 'addressable'
+end
+
 require_relative '../lib/curse_tool'
 
 CurseTool::CLI.build(ARGV[0])

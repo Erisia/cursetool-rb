@@ -1,7 +1,7 @@
 require 'set'
 require 'digest/sha2'
 require 'open-uri'
-require 'cgi/util'
+require 'addressable/uri'
 
 module CurseTool
   MATURITY = [nil, :release, :beta, :alpha].freeze
@@ -86,7 +86,8 @@ module CurseTool
     def create_hash
       Digest::SHA2.new(256).update(open(src, &:read)).to_s
     rescue OpenURI::HTTPError => e
-      warn "Failed to caculate hash on #{self.name} due to #{e}, #{e.message}"
+      warn "Failed to caculate hash on #{self.name} due to #{e.class}, #{e.message}, trying to follow curse's redirect instead"
+      Digest::SHA2.new(256).update(open(src.gsub('media', 'edge'), &:read)).to_s
     end
 
     def by_maturity(files)
@@ -98,12 +99,12 @@ module CurseTool
       file ||= files.reverse.find{|it| it[:releaseType] == maturity + 2 && it[:gameVersion].include?(pack.version.split('.')[0..1].join('.')) }
       return warn("no file found for #{name} in any maturity for #{pack.version}") unless file
       self.filename = file[:fileName]
-      self.src = CGI.escape(file[:downloadUrl]).gsub('%3A', ':').gsub('%2F', '/').gsub('edge', 'media')
+      self.src = Addressable::URI.encode(file[:downloadUrl]).gsub('edge', 'media')
     end
 
     def by_filename(files)
       file = files.find{|it| it[:fileName] == filename}
-      self.src = CGI.escape(file[:downloadUrl]).gsub('%3A', ':').gsub('%2F', '/')
+      self.src = Addressable::URI.encode(file[:downloadUrl]).gsub('edge', 'media')
     end
 
     def dump
