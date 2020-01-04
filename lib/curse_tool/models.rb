@@ -87,7 +87,9 @@ module CurseTool
       Digest::SHA2.new(256).update(open(src, &:read)).to_s
     rescue OpenURI::HTTPError => e
       warn "Failed to caculate hash on #{self.name} due to #{e.class}, #{e.message}, trying to follow curse's redirect instead"
-      Digest::SHA2.new(256).update(open(src.gsub('media', 'edge'), &:read)).to_s
+      hash = Digest::SHA2.new(256).update(open(src.gsub('media', 'edge'), &:read)).to_s
+      self.src = src.gsub('media', 'edge')
+      hash
     end
 
     def by_maturity(files)
