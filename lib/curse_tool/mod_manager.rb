@@ -7,8 +7,8 @@ module CurseTool
     @seen_mods = {}
     @seen_hashes = {}
 
-    CACHE_LOCATION = './data/mod_cache.yaml'
-    HASH_CACHE_LOCATION = './data/hash_cache.yaml'
+    CACHE_LOCATION = '~/.cache/mod_cache.yaml'
+    HASH_CACHE_LOCATION = '~/.cache/hash_cache.yaml'
 
     def pull_mods(version)
       @seen_mods = Psych.load(File.open(CACHE_LOCATION)) if File.exist?(CACHE_LOCATION)
