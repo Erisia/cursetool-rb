@@ -7,6 +7,7 @@ module CurseTool
     @seen_mods = {}
     @seen_hashes = {}
 
+    CACHE_HOME = '~/.cache'
     CACHE_LOCATION = '~/.cache/mod_cache.yaml'
     HASH_CACHE_LOCATION = '~/.cache/hash_cache.yaml'
 
@@ -42,9 +43,13 @@ module CurseTool
       warn("No mod found matching #{slug} on CurseForge.  Can try adding id: key to manifest to force find it.")
     end
 
-    def lookup_deps(slug)
-      result = @seen_mods[slug.to_sym]
-      return false unless result
+    def find_mod(mod_id)
+      found_mod = @seen_mods.values.find{|it| it[:id] == mod_id}
+      unless found_mod
+        found_mod = CurseApi.get_mod(mod_id)
+        add_mod(found_mod)
+      end
+      found_mod
     end
 
     def add_mod(mod_info)
@@ -52,6 +57,7 @@ module CurseTool
     end
 
     def dump!
+      FileUtils.mkdir_p CACHE_HOME
       File.open(CACHE_LOCATION, 'w') { |f| Psych.dump(@seen_mods, f) }
       File.open(HASH_CACHE_LOCATION, 'w') { |f| Psych.dump(@seen_hashes, f) }
     end

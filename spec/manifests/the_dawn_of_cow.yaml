@@ -21,6 +21,7 @@ mods:
 - name: 'bdlib'
 - name: 'bed-patch'
 - name: 'better-builders-wands'
+  maturity: beta
 - name: 'betterfps'
 - name: 'binnies-mods'
 - name: 'biomes-o-plenty'
@@ -57,7 +58,6 @@ mods:
 - name: 'cosmetic-armor-reworked'
 - name: 'crafttweaker'
 - name: 'custom-main-menu'
-- name: 'cyclops-core'
 - name: 'deathquotes-death-quotes'
 - name: 'deep-mob-learning'
 - name: 'deep-resonance'
