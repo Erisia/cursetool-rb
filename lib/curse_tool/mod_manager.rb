@@ -1,4 +1,5 @@
 require_relative 'curse_api'
+require 'fileutils'
 
 module CurseTool
   module ModManager
@@ -23,6 +24,12 @@ module CurseTool
       results.each do |result|
         @seen_mods[result[:slug].to_sym] = result
       end
+    rescue NoMethodError => e
+      File.delete(CACHE_LOCATION) if File.exist? CACHE_LOCATION
+      File.delete(HASH_CACHE_LOCATION) if File.exist? HASH_CACHE_LOCATION
+      @seen_mods = nil
+      @seen_hashes = nil
+      retry
     end
 
     def expand_info(mod_info)
@@ -39,7 +46,9 @@ module CurseTool
     def lookup_mod(mod_info)
       slug = mod_info.name
       return @seen_mods[slug.to_sym] if @seen_mods[slug.to_sym]
-      return @seen_mods.values.find{|it| it[:id] == mod_info.id}
+      found_mod = @seen_mods.values.find{|it| it[:id] == mod_info.id}
+      return found_mod if found_mod
+      return find_mod(mod_info.id) if mod_info.id
       warn("No mod found matching #{slug} on CurseForge.  Can try adding id: key to manifest to force find it.")
     end
 

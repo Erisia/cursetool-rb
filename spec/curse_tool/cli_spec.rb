@@ -6,7 +6,7 @@ describe 'CurseTool::CLI' do
 
   context :integration do
     it 'parses a manifest file into one of baughn\'s modpack nix files' do
-      cli.build('./spec/manifests/the_dawn_of_cow.yaml')
+      cli.build('../manifest/e24.yaml')
     end
   end
 end
