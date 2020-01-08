@@ -138,6 +138,7 @@ module CurseTool
     end
 
     def dump
+      encoded = Addressable::URI.encode(filename)
       hash = {
           title: title.to_s,
           name: name.to_s,

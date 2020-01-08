@@ -35,7 +35,7 @@ module CurseTool
           inner_manifest = ManifestParser.new.parse("#{root_dir}/#{file}")
           inner_imports = inner_manifest[:imports]
           inner_mods = inner_manifest[:mods]
-          inner_imports = inner_imports.flat_map { |inner_file| handle_imports(inner_file)}
+          inner_imports = inner_imports.flat_map { |inner_file| handle_imports(inner_file, root_dir)}
           duplicate_mods = inner_mods.map{|it| it[:name]} & inner_imports.map{|it| it[:name]}
           warn "duplicate mods found #{duplicate_mods.map{|it| it[:name]}} the highest import entry will be used" if duplicate_mods.any?
           inner_mods | inner_imports
