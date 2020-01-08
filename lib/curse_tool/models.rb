@@ -65,8 +65,10 @@ module CurseTool
       self.name = hash[:name]&.to_sym
       self.id = hash[:id]
       self.side = hash[:side]&.to_sym || SIDE[2]
-      self.required = hash[:required] || true
-      self.default = hash[:default] || true
+      self.required = hash[:required]
+      self.required = true if required.nil?
+      self.default = hash[:default]
+      self.default = true if default.nil?
       self.deps = []
       self.filename = hash[:filename]
       self.encoded = hash[:encoded]
