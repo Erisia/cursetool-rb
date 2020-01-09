@@ -1,4 +1,5 @@
-#!nix-shell -i ruby -p ruby_2_6
+#!/usr/bin/env nix-shell
+#!nix-shell -i ruby -p ruby_2_6 rubyPackages_2_6.addressable
 
 require_relative '../lib/curse_tool'
 
