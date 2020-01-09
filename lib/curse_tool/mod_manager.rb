@@ -8,13 +8,20 @@ module CurseTool
     @seen_mods = {}
     @seen_hashes = {}
 
-    CACHE_HOME = '~/.cache'
-    CACHE_LOCATION = '~/.cache/mod_cache.yaml'
-    HASH_CACHE_LOCATION = '~/.cache/hash_cache.yaml'
+    if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+      ENV['HOME'] = "#{ENV['USERPROFILE']}/AppData/Local/"
+    end
+    CACHE_HOME = "#{ENV['HOME']}/.cache"
+    CACHE_LOCATION = "#{CACHE_HOME}/cursetool-rb/mod_cache.yaml"
+    HASH_CACHE_LOCATION = "#{CACHE_HOME}/cursetool-rb/hash_cache.yaml"
 
     def pull_mods(version)
-      @seen_mods = Psych.load(File.open(CACHE_LOCATION)) if File.exist?(CACHE_LOCATION)
-      @seen_hashes = Psych.load(File.open(HASH_CACHE_LOCATION)) if File.exist?(HASH_CACHE_LOCATION)
+      if File.exist?(CACHE_LOCATION)
+        @seen_mods = Psych.load(File.open(CACHE_LOCATION))
+      end
+      if File.exist?(HASH_CACHE_LOCATION)
+        @seen_hashes = Psych.load(File.open(HASH_CACHE_LOCATION))
+      end
       if !@seen_mods || @seen_mods.empty?
         results = CurseApi.search_mods(version.split('.')[0..1].join('.'))
         results.concat CurseApi.search_mods(version)
