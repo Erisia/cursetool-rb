@@ -1,5 +1,6 @@
 require_relative 'curse_api'
 require 'fileutils'
+require 'xdg'
 
 module CurseTool
   module ModManager
@@ -8,12 +9,14 @@ module CurseTool
     @seen_mods = {}
     @seen_hashes = {}
 
-    if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
-      ENV['HOME'] = "#{ENV['USERPROFILE']}/AppData/Local/"
+    HOME = if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+      "#{ENV['USERPROFILE']}/AppData/Local/"
+    else
+      XDG['CONFIG_HOME']
     end
-    CACHE_HOME = "#{ENV['HOME']}/.cache"
-    CACHE_LOCATION = "#{CACHE_HOME}/cursetool-rb/mod_cache.yaml"
-    HASH_CACHE_LOCATION = "#{CACHE_HOME}/cursetool-rb/hash_cache.yaml"
+    CACHE_HOME = File.join(HOME, 'cursetool-rb')
+    CACHE_LOCATION = File.join(CACHE_HOME, 'mod_cache.yaml')
+    HASH_CACHE_LOCATION = File.join(CACHE_HOME, 'hash_cache.yaml')
 
     def pull_mods(version)
       if File.exist?(CACHE_LOCATION)
