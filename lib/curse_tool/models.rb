@@ -1,5 +1,5 @@
 require 'set'
-require 'digest/md5'
+require 'digest'
 require 'digest/sha2'
 require 'open-uri'
 require 'addressable/uri'
@@ -52,7 +52,7 @@ module CurseTool
   end
 
   class NixPackMod
-    attr_accessor :title, :name, :id, :side, :required, :default, :deps, :filename, :encoded, :page, :src, :type, :sha256, :pack, :maturity, :md5
+    attr_accessor :title, :name, :id, :side, :required, :default, :deps, :filename, :encoded, :page, :src, :type, :sha256, :pack, :maturity, :md5, :size
     def self.from_curse_id(curse_id, parent_mod)
       curse_result = ModManager.find_mod(curse_id)
       mod = new(parent_mod.pack)
@@ -77,6 +77,7 @@ module CurseTool
       self.md5 = hash[:md5]
       self.sha256 = hash[:sha256]
       self.maturity = MATURITY.index(hash[:maturity]&.to_sym || :release)
+      self.size = -1
     end
 
 
@@ -106,7 +107,7 @@ module CurseTool
     end
 
     def set_hashes
-      self.sha256, self.md5 = ModManager.seen_hashes[filename] ||= self.create_hash
+      self.sha256, self.md5, self.size = ModManager.seen_hashes[filename] ||= self.create_hash
     end
 
     def get_data
@@ -122,7 +123,8 @@ module CurseTool
       data = self.get_data
       sha256 = Digest::SHA2.new(256).update(data).to_s
       md5 = Digest::MD5.new().update(data).to_s
-      return sha256, md5
+      size = data.length
+      return sha256, md5, size
     end
 
     def by_maturity(files)
@@ -159,7 +161,8 @@ module CurseTool
           encoded: encoded.to_s,
           page: page.to_s,
           src: src.to_s,
-          type: type.to_s
+          type: type.to_s,
+          size: size,
       }
       hash[:md5] = md5.to_s if md5
       hash[:sha256] = sha256.to_s if sha256
