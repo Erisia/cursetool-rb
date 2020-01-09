@@ -8,12 +8,9 @@ module CurseTool
         pack.mods.each do |mod_name, mod_info|
           ModManager.expand_info(mod_info)
         end
-        while pack.dependencies.any?
-          deps = pack.dependencies.uniq
-          pack.dep_list.mods = {}
-          deps.each do |mod_name, mod_info|
-            ModManager.expand_info(mod_info)
-          end
+        deps = pack.dependencies
+        deps.each do |mod_info|
+          ModManager.expand_info(mod_info)
         end
         file_name = manifest_file.gsub('yaml', 'nix')
         NixWriter.dump(pack, file_name)

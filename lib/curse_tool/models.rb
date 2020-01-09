@@ -15,7 +15,7 @@ module CurseTool
       self.version = hash[:version]
       self.imports = hash[:imports]
       self.mod_list = NixPackModList.new(self, hash[:mods])
-      self.dep_list = NixPackModList.new(self, {})
+      self.dep_list = []
     end
 
     def mods
@@ -23,13 +23,14 @@ module CurseTool
     end
 
     def dependencies
-      @dep_list.mods
+      @dep_list
     end
 
     def dump(file)
       file.truncate(0)
       file.write(%({\n  "version" = "#{version}";\n  "imports" = [];\n  "mods" = {\n))
-      @mod_list.mods.merge!(dependencies)
+      deps = @dep_list.each_with_object({}) { |pack_mod, hash| hash[pack_mod.name.to_sym] = pack_mod }
+      @mod_list.mods.merge!(deps)
       @mod_list.dump(file)
       file.write(%(\n\t};\n}))
     end
@@ -98,10 +99,9 @@ module CurseTool
         if found_mod
           warn "#{name} has dependency for #{found_mod.name}, however it was also listed in the manifest. Using defined manifest mod."
         else
-          pack.dependencies[pack_mod.name.to_sym] = pack_mod
+          pack.dependencies << pack_mod unless pack.dependencies.include? pack_mod
         end
       end
-
       set_hashes
       self
     end
