@@ -1,4 +1,5 @@
 require 'set'
+require 'digest/md5'
 require 'digest/sha2'
 require 'open-uri'
 require 'addressable/uri'
@@ -100,21 +101,28 @@ module CurseTool
         end
       end
 
-      create_sha
+      set_hashes
       self
     end
 
-    def create_sha
-      self.sha256 = ModManager.seen_hashes[filename] ||= create_hash
+    def set_hashes
+      self.sha256, self.md5 = ModManager.seen_hashes[filename] ||= self.create_hash
+    end
+
+    def get_data
+      open(src, &:read)
+    rescue OpenURI::HTTPError => e
+      warn "Failed to caculate hash on #{self.name} due to #{e.class}, #{e.message}, trying to follow curse's redirect instead"
+
+      self.src = src.gsub('media', 'edge')
+      open(self.src, &:read)
     end
 
     def create_hash
-      Digest::SHA2.new(256).update(open(src, &:read)).to_s
-    rescue OpenURI::HTTPError => e
-      warn "Failed to caculate hash on #{self.name} due to #{e.class}, #{e.message}, trying to follow curse's redirect instead"
-      hash = Digest::SHA2.new(256).update(open(src.gsub('media', 'edge'), &:read)).to_s
-      self.src = src.gsub('media', 'edge')
-      hash
+      data = self.get_data
+      sha256 = Digest::SHA2.new(256).update(data).to_s
+      md5 = Digest::MD5.new().update(data).to_s
+      return sha256, md5
     end
 
     def by_maturity(files)
