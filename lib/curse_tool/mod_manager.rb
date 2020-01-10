@@ -9,12 +9,14 @@ module CurseTool
     @seen_mods = {}
     @seen_hashes = {}
 
-    HOME = if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
-      "#{ENV['USERPROFILE']}/AppData/Local/"
+    xdg = XDG::Environment.new
+    if (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+      HOME = "#{ENV['USERPROFILE']}/AppData/Local/"
+      CACHE_HOME = File.join(HOME, 'cursetool-rb')
     else
-      XDG['CONFIG_HOME']
+      HOME = xdg.config_home
+      CACHE_HOME = xdg.cache_home
     end
-    CACHE_HOME = File.join(HOME, 'cursetool-rb')
     CACHE_LOCATION = File.join(CACHE_HOME, 'mod_cache.yaml')
     HASH_CACHE_LOCATION = File.join(CACHE_HOME, 'hash_cache.yaml')
 
