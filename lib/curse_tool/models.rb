@@ -1,4 +1,5 @@
 require 'set'
+require 'digest'
 require 'digest/sha2'
 require 'open-uri'
 require 'addressable/uri'
@@ -14,7 +15,7 @@ module CurseTool
       self.version = hash[:version]
       self.imports = hash[:imports]
       self.mod_list = NixPackModList.new(self, hash[:mods])
-      self.dep_list = NixPackModList.new(self, {})
+      self.dep_list = []
     end
 
     def mods
@@ -22,13 +23,14 @@ module CurseTool
     end
 
     def dependencies
-      @dep_list.mods
+      @dep_list
     end
 
     def dump(file)
       file.truncate(0)
       file.write(%({\n  "version" = "#{version}";\n  "imports" = [];\n  "mods" = {\n))
-      @mod_list.mods.merge!(dependencies)
+      deps = @dep_list.each_with_object({}) { |pack_mod, hash| hash[pack_mod.name.to_sym] = pack_mod }
+      @mod_list.mods.merge!(deps)
       @mod_list.dump(file)
       file.write(%(\n\t};\n}))
     end
@@ -51,7 +53,7 @@ module CurseTool
   end
 
   class NixPackMod
-    attr_accessor :title, :name, :id, :side, :required, :default, :deps, :filename, :encoded, :page, :src, :type, :sha256, :pack, :maturity, :md5
+    attr_accessor :title, :name, :id, :side, :required, :default, :deps, :filename, :encoded, :page, :src, :type, :sha256, :pack, :maturity, :md5, :size
     def self.from_curse_id(curse_id, parent_mod)
       curse_result = ModManager.find_mod(curse_id)
       mod = new(parent_mod.pack)
@@ -78,6 +80,7 @@ module CurseTool
       self.md5 = hash[:md5]
       self.sha256 = hash[:sha256]
       self.maturity = MATURITY.index(hash[:maturity]&.to_sym || :release)
+      self.size = -1
     end
 
 
@@ -98,25 +101,32 @@ module CurseTool
         if found_mod
           warn "#{name} has dependency for #{found_mod.name}, however it was also listed in the manifest. Using defined manifest mod."
         else
-          pack.dependencies[pack_mod.name.to_sym] = pack_mod
+          pack.dependencies << pack_mod unless pack.dependencies.include? pack_mod
         end
       end
-
-      create_sha
+      set_hashes
       self
     end
 
-    def create_sha
-      self.sha256 = ModManager.seen_hashes[filename] ||= create_hash
+    def set_hashes
+      self.sha256, self.md5, self.size = ModManager.seen_hashes[filename] ||= self.create_hash
+    end
+
+    def get_data
+      open(src, &:read)
+    rescue OpenURI::HTTPError => e
+      warn "Failed to caculate hash on #{self.name} due to #{e.class}, #{e.message}, trying to follow curse's redirect instead"
+
+      self.src = src.gsub('media', 'edge')
+      open(self.src, &:read)
     end
 
     def create_hash
-      Digest::SHA2.new(256).update(open(src, &:read)).to_s
-    rescue OpenURI::HTTPError => e
-      warn "Failed to caculate hash on #{self.name} due to #{e.class}, #{e.message}, trying to follow curse's redirect instead"
-      hash = Digest::SHA2.new(256).update(open(src.gsub('media', 'edge'), &:read)).to_s
-      self.src = src.gsub('media', 'edge')
-      hash
+      data = self.get_data
+      sha256 = Digest::SHA2.new(256).update(data).to_s
+      md5 = Digest::MD5.new().update(data).to_s
+      size = data.length
+      return sha256, md5, size
     end
 
     def by_maturity(files)
@@ -153,7 +163,8 @@ module CurseTool
           encoded: encoded.to_s,
           page: page.to_s,
           src: src.to_s,
-          type: type.to_s
+          type: type.to_s,
+          size: size,
       }
       hash[:md5] = md5.to_s if md5
       hash[:sha256] = sha256.to_s if sha256
