@@ -1,17 +1,28 @@
+require 'progress'
+
 module CurseTool
   class CLI
     class << self
       def build(manifest_file)
+        puts 'Initializing'
         manifest = build_manifest(manifest_file)
         pack = NixPack.new(**manifest)
+        
+        puts 'Pulling all mods'
         ModManager.pull_mods(pack.version)
-        pack.mods.each do |mod_name, mod_info|
+
+        pack.mods.with_progress('Expanding mods').each do |mod_name, mod_info|
+          Progress.note = mod_name
           ModManager.expand_info(mod_info)
         end
+
         deps = pack.dependencies
-        deps.each do |mod_info|
+        deps.with_progress('Expanding deps').each do |mod_info|
+          Progress.note = mod_info.name
           ModManager.expand_info(mod_info)
         end
+
+        puts 'Dumping'
         file_name = manifest_file.gsub('yaml', 'nix')
         NixWriter.dump(pack, file_name)
       end
