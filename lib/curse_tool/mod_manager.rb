@@ -21,6 +21,8 @@ module CurseTool
     HASH_CACHE_LOCATION = File.join(CACHE_HOME, 'hash_cache.yaml')
 
     def pull_mods(version)
+      puts "in pull-mods"
+      retries ||= 0
       if File.exist?(CACHE_LOCATION)
         @seen_mods = Psych.load(File.open(CACHE_LOCATION))
       end
@@ -41,7 +43,8 @@ module CurseTool
       File.delete(HASH_CACHE_LOCATION) if File.exist? HASH_CACHE_LOCATION
       @seen_mods = nil
       @seen_hashes = nil
-      retry
+      retry if (retries += 1) <= 1
+      throw e
     end
 
     def expand_info(mod_info)
