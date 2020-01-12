@@ -20,6 +20,16 @@
     };
     version = "1.3";
   };
+  progress = {
+    groups = ["default"];
+    platforms = [];
+    source = {
+      remotes = ["https://rubygems.org"];
+      sha256 = "1pm3bv5n8c8j0vfm7wghd7xf6yq4m068cksxjldmna11qi0h0s8s";
+      type = "gem";
+    };
+    version = "3.5.2";
+  };
   public_suffix = {
     groups = ["default"];
     platforms = [];
@@ -83,16 +93,6 @@
       type = "gem";
     };
     version = "3.9.2";
-  };
-  ruby-progressbar = {
-    groups = ["default"];
-    platforms = [];
-    source = {
-      remotes = ["https://rubygems.org"];
-      sha256 = "1k77i0d4wsn23ggdd2msrcwfy0i376cglfqypkk2q77r2l3408zf";
-      type = "gem";
-    };
-    version = "1.10.1";
   };
   xdg = {
     groups = ["default"];
