@@ -3,4 +3,4 @@
 set -e
 
 DIR="$(dirname "$(readlink -f "$0")")"
-nix-shell $DIR/default.nix --run "$DIR/exe/cursetool-rb $@"
+nix-shell $DIR/default.nix --run "ruby -W0 $DIR/exe/cursetool-rb $@"
