@@ -139,12 +139,12 @@ module CurseTool
         return warn("no file found for #{name} in any maturity for #{pack.version}")
       end
       self.filename = @file[:fileName]
-      self.src = Addressable::URI.encode(@file[:downloadUrl]).gsub('edge', 'media').gsub('+', '%2B')
+      self.src = Addressable::URI.encode(@file[:downloadUrl]).gsub('+', '%2B')
     end
 
     def by_filename(files)
       @file = files.find{|it| it[:fileName] == filename}
-      self.src = Addressable::URI.encode(@file[:downloadUrl]).gsub('edge', 'media')
+      self.src = Addressable::URI.encode(@file[:downloadUrl])
     end
 
     def dump
