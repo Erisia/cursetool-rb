@@ -71,7 +71,7 @@ module CurseTool
       unless found_mod
         found_mod = CurseApi.get_mod(mod_id)
         add_mod(found_mod)
-      end
+      ends
       found_mod
     end
 

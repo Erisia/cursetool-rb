@@ -116,8 +116,6 @@ module CurseTool
       open(src, &:read)
     rescue OpenURI::HTTPError => e
       warn "Failed to caculate hash on #{self.name} due to #{e.class}, #{e.message}, trying to follow curse's redirect instead"
-
-      self.src = src.gsub('media', 'edge')
       open(self.src, &:read)
     end
 
